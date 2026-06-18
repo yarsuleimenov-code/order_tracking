@@ -46,6 +46,14 @@
           </button>
         </form>
 
+        <div id="verified-summary" class="verified-summary hidden">
+          <div>
+            <p id="verified-order" class="verified-title"></p>
+            <p id="verified-phone" class="description"></p>
+          </div>
+          <button id="track-another-button" class="secondary-button" type="button">Track another order</button>
+        </div>
+
         <div id="status-message" class="status-message" role="status" aria-live="polite"></div>
       </section>
 
@@ -55,6 +63,10 @@
             <p id="current-status" class="status-pill"></p>
             <h2 id="result-order"></h2>
             <p id="status-description" class="result-description"></p>
+            <div class="next-step">
+              <p class="label">Next step</p>
+              <p id="next-step-text"></p>
+            </div>
           </div>
           <div class="last-updated">
             <p class="label">Last updated</p>
@@ -91,6 +103,10 @@
           </div>
           <ol id="timeline" class="timeline"></ol>
         </section>
+
+        <footer class="result-footer">
+          <a id="contact-support-link" class="support-link" href="mailto:support@example.com">Contact support</a>
+        </footer>
       </section>
     </main>
 

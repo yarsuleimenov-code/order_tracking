@@ -6,18 +6,26 @@ const phoneLast4Input = document.querySelector('#phone-last4');
 const trackButton = document.querySelector('#track-button');
 const trackButtonLabel = document.querySelector('#track-button-label');
 const statusMessage = document.querySelector('#status-message');
+const searchPanel = document.querySelector('.search-panel');
+const verifiedSummary = document.querySelector('#verified-summary');
+const verifiedOrder = document.querySelector('#verified-order');
+const verifiedPhone = document.querySelector('#verified-phone');
+const trackAnotherButton = document.querySelector('#track-another-button');
 const result = document.querySelector('#result');
 
 const resultOrder = document.querySelector('#result-order');
 const currentStatus = document.querySelector('#current-status');
 const statusDescription = document.querySelector('#status-description');
+const nextStepText = document.querySelector('#next-step-text');
 const pickupDate = document.querySelector('#pickup-date');
 const pickupWindow = document.querySelector('#pickup-window');
+const deliveryHeading = document.querySelector('#delivery-heading');
 const deliveryLabelValue = document.querySelector('#delivery-label-value');
 const deliveryDate = document.querySelector('#delivery-date');
 const deliveryWindow = document.querySelector('#delivery-window');
 const lastUpdated = document.querySelector('#last-updated');
 const timeline = document.querySelector('#timeline');
+const contactSupportLink = document.querySelector('#contact-support-link');
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -69,6 +77,14 @@ form.addEventListener('submit', async (event) => {
   }
 });
 
+trackAnotherButton.addEventListener('click', () => {
+  orderIdInput.value = '';
+  phoneLast4Input.value = '';
+  showSearchForm();
+  clearState();
+  orderIdInput.focus();
+});
+
 function renderResponse(data) {
   if (!data || data.found === false) {
     showMessage('Order was not found. Please check your Order ID.', true);
@@ -83,17 +99,43 @@ function renderResponse(data) {
   resultOrder.textContent = `Order #${data.order_id || ''}`;
   currentStatus.textContent = data.client_status || 'Order status is being updated';
   statusDescription.textContent = data.status_description || '';
+  nextStepText.textContent = getNextStep(data);
   pickupDate.textContent = data.pickup_date || 'Not scheduled yet';
   pickupWindow.textContent = data.pickup_window || 'Not scheduled yet';
-  deliveryLabelValue.textContent = data.delivery_label || '';
+  renderDeliveryDetails(data);
   deliveryDate.textContent = data.delivery_date || 'Not scheduled yet';
-  deliveryWindow.textContent = data.delivery_window || 'Not scheduled yet';
   lastUpdated.textContent = data.last_updated || 'Not scheduled yet';
   renderTimeline(Array.isArray(data.timeline) ? data.timeline : []);
+  renderVerifiedSummary(data);
 
   statusMessage.textContent = '';
   statusMessage.classList.remove('error');
   result.classList.remove('hidden');
+}
+
+function renderDeliveryDetails(data) {
+  const isEstimated = data.delivery_label === 'Estimated delivery';
+
+  deliveryHeading.textContent = isEstimated ? 'Estimated delivery' : 'Delivery appointment';
+  deliveryLabelValue.textContent = isEstimated ? '' : data.delivery_label || '';
+  deliveryWindow.textContent = isEstimated
+    ? 'Delivery appointment is not scheduled yet.'
+    : data.delivery_window || 'Not scheduled yet';
+}
+
+function renderVerifiedSummary(data) {
+  verifiedOrder.textContent = `Tracking order #${data.order_id || ''}`;
+  verifiedPhone.textContent = data.phone_masked
+    ? `Verified with phone ${data.phone_masked}`
+    : 'Verified with phone';
+  contactSupportLink.href = `mailto:support@example.com?subject=${encodeURIComponent(`Order tracking support #${data.order_id || ''}`)}`;
+  searchPanel.classList.add('is-verified');
+  verifiedSummary.classList.remove('hidden');
+}
+
+function showSearchForm() {
+  searchPanel.classList.remove('is-verified');
+  verifiedSummary.classList.add('hidden');
 }
 
 function renderTimeline(items) {
@@ -155,6 +197,44 @@ function getTimelineIndex(items, code) {
 
 function hasScheduledValue(value) {
   return Boolean(value && value !== 'Not scheduled yet');
+}
+
+function getNextStep(data) {
+  const status = (data.client_status || '').toLowerCase();
+
+  if (status === 'pickup scheduled') {
+    return 'Your item will be picked up during the scheduled pickup window.';
+  }
+
+  if (status === 'pickup scheduling in progress' || status === 'pickup requested') {
+    return 'We are coordinating the pickup appointment.';
+  }
+
+  if (status === 'picked up') {
+    return 'Your item has been picked up and will move to transit.';
+  }
+
+  if (status === 'in transit') {
+    return 'Your item is on the way to the delivery area.';
+  }
+
+  if (status === 'delivery scheduling in progress') {
+    return 'We are coordinating the delivery appointment.';
+  }
+
+  if (status === 'delivery scheduled') {
+    return 'Your item will be delivered during the scheduled delivery window.';
+  }
+
+  if (status === 'delivered') {
+    return 'Your order has been delivered.';
+  }
+
+  if (status === 'order canceled') {
+    return 'No further tracking updates are expected for this order.';
+  }
+
+  return 'We will update this page when the next tracking milestone is available.';
 }
 
 function getMarker(state) {

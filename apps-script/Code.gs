@@ -327,7 +327,7 @@ function formatDisplayDate(value) {
   }
 
   if (value instanceof Date && !Number.isNaN(value.getTime())) {
-    return formatDateParts(value.getFullYear(), value.getMonth() + 1, value.getDate());
+    return formatDateParts(value.getUTCFullYear(), value.getUTCMonth() + 1, value.getUTCDate());
   }
 
   const text = normalizeText(value);
