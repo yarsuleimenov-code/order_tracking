@@ -20,10 +20,9 @@ public_order_tracking
 | `phone_masked` | Yes | Masked phone, used only to verify last 4 digits. |
 | `recipient_name` | No | Not returned in MVP response. |
 | `type` | No | `pickup` or `delivery`; used to select date/window rows. |
-| `scheduled_date` | No | Appointment date for the matching pickup or delivery row when scheduled. |
-| `pickup_due_date` | No | Fallback pickup due date when `scheduled_date` is not available. |
-| `delivery_due_date` | No | Estimated delivery date when no delivery appointment row is available. |
-| `last_change_date` | No | Used to choose latest row and shown as last update after validation. |
+| `scheduled_date` / `PU date` / `pickup_due_date` | No | Appointment or pickup date for the matching pickup row. |
+| `delivery_due_date` / `Delivery Due` | No | Estimated delivery date when no delivery appointment row is available. |
+| `last_change_date` / `Last change date` | No | Used to choose latest row and shown as last update after validation. |
 
 ## Public Response Fields
 
@@ -35,10 +34,10 @@ public_order_tracking
 | `phone_masked` | Masked phone only, never full phone. |
 | `client_status` | Mapped public status. |
 | `status_description` | Short public explanation. |
-| `pickup_date` | `scheduled_date` from pickup row, fallback to `pickup_due_date`, or `Not scheduled yet`. |
+| `pickup_date` | `scheduled_date`, `PU date`, or `pickup_due_date` from pickup row, or `Not scheduled yet`. |
 | `pickup_window` | Pickup row `earliest_time - latest_time` from display values, or `Not scheduled yet`. |
 | `delivery_label` | `Delivery scheduled` when a delivery appointment exists, otherwise `Estimated delivery`. |
-| `delivery_date` | Delivery row `scheduled_date` when available; otherwise estimated `delivery_due_date`. |
+| `delivery_date` | Delivery row `scheduled_date` when available; otherwise estimated `delivery_due_date` / `Delivery Due`. |
 | `delivery_window` | Delivery row time window only when delivery appointment exists; otherwise `Not scheduled yet`. |
 | `last_updated` | `last_change_date` from display values or `Not scheduled yet`. |
 | `timeline` | Stable client-facing progress steps. |

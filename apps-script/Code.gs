@@ -73,7 +73,7 @@ function trackOrder(payload) {
   const deliveryRow = getLatestTypedRow(verifiedRows, 'delivery');
   const deliveryDateRow = deliveryRow || latestRow;
   const clientStatus = mapClientStatus(latestRow, pickupRow);
-  const deliveryAppointmentDate = deliveryRow ? getPublicDate(deliveryRow, ['scheduled_date']) : NOT_SCHEDULED;
+  const deliveryAppointmentDate = deliveryRow ? getPublicDate(deliveryRow, ['scheduled_date', 'delivery_date']) : NOT_SCHEDULED;
   const hasDeliveryAppointment = deliveryAppointmentDate !== NOT_SCHEDULED;
 
   return {
@@ -83,14 +83,14 @@ function trackOrder(payload) {
     phone_masked: normalizeText(latestRow.phone_masked),
     client_status: clientStatus.label,
     status_description: clientStatus.description,
-    pickup_date: getPublicDate(pickupRow, ['scheduled_date', 'pickup_due_date']),
+    pickup_date: getPublicDate(pickupRow, ['scheduled_date', 'pu_date', 'pickup_date', 'pickup_due_date', 'pickup_due']),
     pickup_window: getPublicTimeWindow(pickupRow),
     delivery_label: hasDeliveryAppointment ? 'Delivery scheduled' : 'Estimated delivery',
     delivery_date: hasDeliveryAppointment
       ? deliveryAppointmentDate
-      : getPublicDate(deliveryDateRow, ['delivery_due_date']),
+      : getPublicDate(deliveryDateRow, ['delivery_due_date', 'delivery_due', 'estimated_delivery_date']),
     delivery_window: hasDeliveryAppointment ? getPublicTimeWindow(deliveryRow) : NOT_SCHEDULED,
-    last_updated: getPublicDate(latestRow, ['last_change_date']),
+    last_updated: getPublicDate(latestRow, ['last_change_date', 'last_change', 'last_updated']),
     timeline: buildTimeline(clientStatus.timelineCode),
   };
 }
@@ -141,7 +141,7 @@ function loadTrackingRows() {
 function mapClientStatus(row, pickupRow) {
   const rawStatus = normalizeText(row.crm_status);
   const key = normalizeCrmStatus(rawStatus);
-  const hasPickupSchedule = getPublicDate(pickupRow, ['scheduled_date', 'pickup_due_date']) !== NOT_SCHEDULED
+  const hasPickupSchedule = getPublicDate(pickupRow, ['scheduled_date', 'pu_date', 'pickup_date', 'pickup_due_date', 'pickup_due']) !== NOT_SCHEDULED
     || getPublicTimeWindow(pickupRow) !== NOT_SCHEDULED;
 
   if (key === 'order canceled') {
@@ -247,7 +247,10 @@ function status(label, description, timelineCode) {
 }
 
 function normalizeHeader(value) {
-  return normalizeText(value).toLowerCase();
+  return normalizeText(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
 }
 
 function normalizeCrmStatus(value) {
@@ -276,6 +279,12 @@ function getPublicDate(row, fields) {
     if (formatted !== NOT_SCHEDULED) {
       return formatted;
     }
+
+    const rawFormatted = formatDisplayDate(getRawValue(row, field));
+
+    if (rawFormatted !== NOT_SCHEDULED) {
+      return rawFormatted;
+    }
   }
 
   return NOT_SCHEDULED;
@@ -299,6 +308,14 @@ function getDisplayValue(row, field) {
 
   if (row._display && row._display[field] !== undefined) {
     return row._display[field];
+  }
+
+  return row[field];
+}
+
+function getRawValue(row, field) {
+  if (!row || row[field] === undefined) {
+    return '';
   }
 
   return row[field];
