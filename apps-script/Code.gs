@@ -70,8 +70,11 @@ function trackOrder(payload) {
 
   const latestRow = getLatestRow(verifiedRows);
   const pickupRow = getLatestTypedRow(verifiedRows, 'pickup') || latestRow;
-  const deliveryRow = getLatestTypedRow(verifiedRows, 'delivery') || latestRow;
+  const deliveryRow = getLatestTypedRow(verifiedRows, 'delivery');
+  const deliveryDateRow = deliveryRow || latestRow;
   const clientStatus = mapClientStatus(latestRow, pickupRow);
+  const deliveryAppointmentDate = deliveryRow ? getPublicDate(deliveryRow, ['scheduled_date']) : NOT_SCHEDULED;
+  const hasDeliveryAppointment = deliveryAppointmentDate !== NOT_SCHEDULED;
 
   return {
     found: true,
@@ -80,11 +83,14 @@ function trackOrder(payload) {
     phone_masked: normalizeText(latestRow.phone_masked),
     client_status: clientStatus.label,
     status_description: clientStatus.description,
-    pickup_date: formatDateValue(pickupRow.pickup_due_date),
-    pickup_window: formatTimeWindow(pickupRow.earliest_time, pickupRow.latest_time),
-    delivery_date: formatDateValue(deliveryRow.delivery_due_date),
-    delivery_window: formatTimeWindow(deliveryRow.earliest_time, deliveryRow.latest_time),
-    last_updated: formatDateValue(latestRow.last_change_date),
+    pickup_date: getPublicDate(pickupRow, ['scheduled_date', 'pickup_due_date']),
+    pickup_window: getPublicTimeWindow(pickupRow),
+    delivery_label: hasDeliveryAppointment ? 'Delivery scheduled' : 'Estimated delivery',
+    delivery_date: hasDeliveryAppointment
+      ? deliveryAppointmentDate
+      : getPublicDate(deliveryDateRow, ['delivery_due_date']),
+    delivery_window: hasDeliveryAppointment ? getPublicTimeWindow(deliveryRow) : NOT_SCHEDULED,
+    last_updated: getPublicDate(latestRow, ['last_change_date']),
     timeline: buildTimeline(clientStatus.timelineCode),
   };
 }
@@ -105,23 +111,29 @@ function loadTrackingRows() {
     throw new Error(`Sheet not found: ${sheetName}`);
   }
 
-  const values = sheet.getDataRange().getValues();
+  const range = sheet.getDataRange();
+  const values = range.getValues();
+  const displayValues = range.getDisplayValues();
 
   if (values.length < 2) {
     return [];
   }
 
-  const headers = values[0].map((header) => normalizeHeader(header));
+  const headers = displayValues[0].map((header) => normalizeHeader(header));
 
-  return values.slice(1).map((row) => {
+  return values.slice(1).map((row, rowIndex) => {
+    const displayRow = displayValues[rowIndex + 1];
     const record = {};
+    const displayRecord = {};
 
     headers.forEach((header, index) => {
       if (header) {
         record[header] = row[index];
+        displayRecord[header] = displayRow[index];
       }
     });
 
+    record._display = displayRecord;
     return record;
   });
 }
@@ -129,8 +141,8 @@ function loadTrackingRows() {
 function mapClientStatus(row, pickupRow) {
   const rawStatus = normalizeText(row.crm_status);
   const key = normalizeCrmStatus(rawStatus);
-  const hasPickupSchedule = isScheduledDate(pickupRow.pickup_due_date)
-    || formatTimeWindow(pickupRow.earliest_time, pickupRow.latest_time) !== NOT_SCHEDULED;
+  const hasPickupSchedule = getPublicDate(pickupRow, ['scheduled_date', 'pickup_due_date']) !== NOT_SCHEDULED
+    || getPublicTimeWindow(pickupRow) !== NOT_SCHEDULED;
 
   if (key === 'order canceled') {
     return status('Order canceled', 'Order has been canceled.', 'order_received');
@@ -257,19 +269,21 @@ function getLast4Digits(value) {
   return digits.length >= 4 ? digits.slice(-4) : '';
 }
 
-function formatDateValue(value) {
-  const date = toValidDate(value);
+function getPublicDate(row, fields) {
+  for (const field of fields) {
+    const formatted = formatDisplayDate(getDisplayValue(row, field));
 
-  if (!date) {
-    return NOT_SCHEDULED;
+    if (formatted !== NOT_SCHEDULED) {
+      return formatted;
+    }
   }
 
-  return Utilities.formatDate(date, Session.getScriptTimeZone(), 'MMM d, yyyy');
+  return NOT_SCHEDULED;
 }
 
-function formatTimeWindow(startValue, endValue) {
-  const start = formatTimeValue(startValue);
-  const end = formatTimeValue(endValue);
+function getPublicTimeWindow(row) {
+  const start = formatDisplayTime(getDisplayValue(row, 'earliest_time'));
+  const end = formatDisplayTime(getDisplayValue(row, 'latest_time'));
 
   if (!start || !end) {
     return NOT_SCHEDULED;
@@ -278,18 +292,56 @@ function formatTimeWindow(startValue, endValue) {
   return `${start} - ${end}`;
 }
 
-function formatTimeValue(value) {
-  if (isInvalidCellValue(value)) {
+function getDisplayValue(row, field) {
+  if (!row) {
     return '';
   }
 
-  if (value instanceof Date && !Number.isNaN(value.getTime())) {
-    return Utilities.formatDate(value, Session.getScriptTimeZone(), 'h:mm a');
+  if (row._display && row._display[field] !== undefined) {
+    return row._display[field];
   }
 
-  if (typeof value === 'number' && value >= 0 && value < 1) {
-    const millis = Math.round(value * 24 * 60 * 60 * 1000);
-    return Utilities.formatDate(new Date(Date.UTC(1899, 11, 30) + millis), 'UTC', 'h:mm a');
+  return row[field];
+}
+
+function formatDisplayDate(value) {
+  if (isInvalidCellValue(value)) {
+    return NOT_SCHEDULED;
+  }
+
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return formatDateParts(value.getFullYear(), value.getMonth() + 1, value.getDate());
+  }
+
+  const text = normalizeText(value);
+
+  if (!text) {
+    return NOT_SCHEDULED;
+  }
+
+  const isoMatch = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:\s+\d{1,2}:\d{2}(?::\d{2})?)?$/);
+
+  if (isoMatch) {
+    return formatDateParts(Number(isoMatch[1]), Number(isoMatch[2]), Number(isoMatch[3]));
+  }
+
+  const usMatch = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+
+  if (usMatch) {
+    const year = normalizeYear(Number(usMatch[3]));
+    return formatDateParts(year, Number(usMatch[1]), Number(usMatch[2]));
+  }
+
+  if (/^[A-Za-z]{3,9}\s+\d{1,2},\s+\d{4}$/.test(text)) {
+    return text;
+  }
+
+  return NOT_SCHEDULED;
+}
+
+function formatDisplayTime(value) {
+  if (isInvalidCellValue(value)) {
+    return '';
   }
 
   const text = normalizeText(value);
@@ -298,33 +350,49 @@ function formatTimeValue(value) {
     return '';
   }
 
-  const timeMatch = text.match(/^(\d{1,2}):(\d{2})(?::\d{2})?(\s?[AP]M)?$/i);
+  const timeMatch = text.match(/^(\d{1,2}):(\d{2})(?::\d{2})?(?:\s*([AP]M))?$/i);
 
-  if (timeMatch) {
-    if (timeMatch[3]) {
-      return text.toUpperCase().replace(/\s?([AP]M)$/i, ' $1');
-    }
-
-    const hours = Number(timeMatch[1]);
-    const minutes = Number(timeMatch[2]);
-
-    if (hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59) {
-      return Utilities.formatDate(new Date(2000, 0, 1, hours, minutes), Session.getScriptTimeZone(), 'h:mm a');
-    }
+  if (!timeMatch) {
+    return '';
   }
 
-  if (/^\d{1,2}:\d{2}(\s?[AP]M)$/i.test(text)) {
-    return text.toUpperCase().replace(/\s?([AP]M)$/i, ' $1');
+  let hours = Number(timeMatch[1]);
+  const minutes = Number(timeMatch[2]);
+  const meridiem = timeMatch[3] ? timeMatch[3].toUpperCase() : '';
+
+  if (hours > 23 || minutes > 59) {
+    return '';
   }
 
-  const parsed = new Date(text);
-  return Number.isNaN(parsed.getTime())
-    ? ''
-    : Utilities.formatDate(parsed, Session.getScriptTimeZone(), 'h:mm a');
+  if (meridiem) {
+    if (hours < 1 || hours > 12) {
+      return '';
+    }
+
+    return `${pad2(hours)}:${pad2(minutes)} ${meridiem}`;
+  }
+
+  const suffix = hours >= 12 ? 'PM' : 'AM';
+  const twelveHour = hours % 12 || 12;
+  return `${pad2(twelveHour)}:${pad2(minutes)} ${suffix}`;
 }
 
-function isScheduledDate(value) {
-  return formatDateValue(value) !== NOT_SCHEDULED;
+function normalizeYear(year) {
+  return year < 100 ? 2000 + year : year;
+}
+
+function formatDateParts(year, month, day) {
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  if (month < 1 || month > 12 || day < 1 || day > 31) {
+    return NOT_SCHEDULED;
+  }
+
+  return `${monthNames[month - 1]} ${day}, ${year}`;
+}
+
+function pad2(value) {
+  return String(value).padStart(2, '0');
 }
 
 function getDateTime(value) {

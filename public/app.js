@@ -12,6 +12,7 @@ const currentStatus = document.querySelector('#current-status');
 const statusDescription = document.querySelector('#status-description');
 const pickupDate = document.querySelector('#pickup-date');
 const pickupWindow = document.querySelector('#pickup-window');
+const deliveryLabelValue = document.querySelector('#delivery-label-value');
 const deliveryDate = document.querySelector('#delivery-date');
 const deliveryWindow = document.querySelector('#delivery-window');
 const lastUpdated = document.querySelector('#last-updated');
@@ -83,6 +84,7 @@ function renderResponse(data) {
   statusDescription.textContent = data.status_description || '';
   pickupDate.textContent = data.pickup_date || 'Not scheduled yet';
   pickupWindow.textContent = data.pickup_window || 'Not scheduled yet';
+  deliveryLabelValue.textContent = data.delivery_label || '';
   deliveryDate.textContent = data.delivery_date || 'Not scheduled yet';
   deliveryWindow.textContent = data.delivery_window || 'Not scheduled yet';
   lastUpdated.textContent = data.last_updated || 'Not scheduled yet';
