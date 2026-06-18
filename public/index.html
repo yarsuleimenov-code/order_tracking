@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Track your order</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="tracking-panel" aria-labelledby="page-title">
+        <div class="panel-header">
+          <h1 id="page-title">Track your order</h1>
+        </div>
+
+        <form id="tracking-form" class="tracking-form" novalidate>
+          <label for="order-id">Order ID</label>
+          <input
+            id="order-id"
+            name="order_id"
+            type="text"
+            inputmode="numeric"
+            autocomplete="off"
+            required
+          >
+
+          <label for="phone-last4">Last 4 digits of phone number</label>
+          <input
+            id="phone-last4"
+            name="phone_last4"
+            type="text"
+            inputmode="numeric"
+            maxlength="4"
+            pattern="[0-9]{4}"
+            autocomplete="off"
+            required
+          >
+
+          <button id="track-button" type="submit">Track order</button>
+        </form>
+
+        <div id="status-message" class="status-message" role="status" aria-live="polite"></div>
+
+        <section id="result" class="result hidden" aria-live="polite">
+          <h2 id="result-order"></h2>
+
+          <div class="summary-grid">
+            <div>
+              <p class="label">Current status:</p>
+              <p id="current-status" class="value"></p>
+              <p id="status-description" class="description"></p>
+            </div>
+            <div>
+              <p class="label">Pickup:</p>
+              <p id="pickup-date" class="value"></p>
+              <p id="pickup-window" class="description"></p>
+            </div>
+            <div>
+              <p class="label">Delivery:</p>
+              <p id="delivery-date" class="value"></p>
+              <p id="delivery-window" class="description"></p>
+            </div>
+            <div>
+              <p class="label">Last updated:</p>
+              <p id="last-updated" class="value"></p>
+            </div>
+          </div>
+
+          <div class="progress-block">
+            <p class="label">Progress:</p>
+            <ol id="timeline" class="timeline"></ol>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
