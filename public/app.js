@@ -1,4 +1,4 @@
-const TRACKING_API_URL = 'PASTE_APPS_SCRIPT_WEB_APP_URL_HERE/track-order';
+const TRACKING_API_URL = 'https://script.google.com/macros/s/AKfycbzpDDSHD1k69cC3myA1rJnUJ7yZBRVj-IuMt9vq65-nU9G6Ax0uqXA9CAyG-_KIrVc6OQ/exec/track-order';
 
 const form = document.querySelector('#tracking-form');
 const orderIdInput = document.querySelector('#order-id');
