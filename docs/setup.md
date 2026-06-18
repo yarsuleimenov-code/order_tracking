@@ -48,13 +48,13 @@ Do not put secrets in frontend files.
 2. In `public/app.js`, replace:
 
 ```js
-PASTE_APPS_SCRIPT_WEB_APP_URL_HERE/track-order
+PASTE_APPS_SCRIPT_WEB_APP_URL_HERE
 ```
 
 with:
 
 ```js
-https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec/track-order
+https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec
 ```
 
 The frontend must call only this Apps Script endpoint, not the Google Spreadsheet URL.
