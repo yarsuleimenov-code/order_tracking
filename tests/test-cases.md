@@ -22,7 +22,7 @@ Validate the MVP client order tracking flow using Apps Script backend and static
 | 12 | Number-prefixed transit status | `6. Sent interstate` or `7. Received interstate` | UI displays `In transit`; timeline current step is `In transit`. |
 | 13 | Buyer hours collected status | `8. Buyer business hours collected` | UI displays `Delivery scheduling in progress`; timeline current step is `Delivery scheduling`. |
 | 14 | Submitted for delivery status | `9. Submitted for delivery` | UI displays `Delivery scheduled`; timeline current step is `Delivery scheduled`. |
-| 15 | Pickup display values | `22913624`, `2464` | Pickup window displays `09:00 AM - 05:00 PM`; no `10:38 PM - 6:38 AM` artifact appears. |
+| 15 | Pickup display values | `22913624`, `2464` with `06/18/2026` or `06/18/2026 00:00:00` display date | Pickup date displays `Jun 18, 2026`; pickup window displays `09:00 AM - 05:00 PM`; no `10:38 PM - 6:38 AM` artifact appears. |
 | 16 | Estimated delivery without delivery row | Pickup row has `delivery_due_date`, no delivery appointment row | UI displays `Estimated delivery`, delivery date, and `Not scheduled yet` for delivery window. |
 | 17 | Delivery appointment row | Delivery row has `scheduled_date`, `earliest_time`, and `latest_time` | UI displays `Delivery scheduled`, delivery appointment date, delivery window, and Delivery scheduled progress step. |
 
