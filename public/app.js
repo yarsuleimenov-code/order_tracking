@@ -4,6 +4,7 @@ const form = document.querySelector('#tracking-form');
 const orderIdInput = document.querySelector('#order-id');
 const phoneLast4Input = document.querySelector('#phone-last4');
 const trackButton = document.querySelector('#track-button');
+const trackButtonLabel = document.querySelector('#track-button-label');
 const statusMessage = document.querySelector('#status-message');
 const result = document.querySelector('#result');
 
@@ -108,6 +109,7 @@ function renderTimeline(items) {
     marker.textContent = getMarker(item.state);
 
     const label = document.createElement('span');
+    label.className = 'timeline-label';
     label.textContent = item.label || '';
 
     row.append(marker, label);
@@ -157,11 +159,11 @@ function hasScheduledValue(value) {
 
 function getMarker(state) {
   if (state === 'done') {
-    return '✓';
+    return '\u2713';
   }
 
   if (state === 'current') {
-    return '●';
+    return '\u25cf';
   }
 
   return '';
@@ -181,7 +183,8 @@ function showMessage(message, isError) {
 
 function setLoading(isLoading) {
   trackButton.disabled = isLoading;
-  trackButton.textContent = isLoading ? 'Loading...' : 'Track order';
+  trackButton.classList.toggle('loading', isLoading);
+  trackButtonLabel.textContent = isLoading ? 'Checking...' : 'Track order';
 
   if (isLoading) {
     showMessage('Loading order status...', false);
