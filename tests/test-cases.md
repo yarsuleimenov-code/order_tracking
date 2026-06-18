@@ -15,9 +15,10 @@ Validate the MVP client order tracking flow using Apps Script backend and static
 | 5 | Empty pickup date | Existing order with empty `pickup_due_date` | Pickup date displays `Not scheduled yet`. |
 | 6 | Empty delivery date | Existing order with empty `delivery_due_date` | Delivery date displays `Not scheduled yet`. |
 | 7 | Empty time window | Empty `earliest_time` or `latest_time` | Window displays `Not scheduled yet`. |
-| 8 | Unknown `crm_status` | Unmapped status | UI displays `Order status is being updated`; raw status is not shown. |
+| 8 | Unknown `crm_status` without pickup schedule | Unmapped status and no pickup date/window | UI displays `Order status is being updated`; raw status is not shown. |
 | 9 | `Order canceled` status | Matching order with canceled status | UI displays `Order canceled`; internal fields are not shown. |
 | 10 | Formula error in date/time | `#ERROR!`, `#N/A`, or invalid value | UI displays `Not scheduled yet`; no raw formula error is shown. |
+| 11 | Unknown or early `crm_status` with pickup date | Pickup date or pickup window exists | UI displays `Pickup scheduled`; timeline current step is `Pickup scheduled`. |
 
 ## Frontend Checks
 

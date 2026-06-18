@@ -9,6 +9,7 @@
 | `Seller business hours collected` | `Pickup scheduling in progress` | Pickup scheduling |
 | `Submitted for pick-up` with pickup date or time window | `Pickup scheduled` | Pickup scheduled |
 | `Submitted for pick-up` without pickup date or time window | `Pickup requested` | Pickup scheduling |
+| Early, empty, or unknown status with pickup date or time window | `Pickup scheduled` | Pickup scheduled |
 | `Pick-up finished. Photo & Bol uploaded` | `Picked up` | Picked up |
 | `Sent interstate` | `In transit` | In transit |
 | `Submitted for delivery` | `Delivery scheduling in progress` | Delivery scheduling |
@@ -21,13 +22,19 @@
 
 ## Unknown Statuses
 
-Unknown, empty, or ambiguous CRM statuses return:
+Unknown, empty, or ambiguous CRM statuses without a valid pickup schedule return:
 
 ```text
 Order status is being updated
 ```
 
 This avoids exposing raw CRM statuses and avoids showing a wrong final status.
+
+If a valid pickup date or pickup time window exists, the public status is promoted to:
+
+```text
+Pickup scheduled
+```
 
 ## Scheduled / Not Scheduled
 
@@ -43,9 +50,9 @@ Time windows:
 - missing either side -> `Not scheduled yet`;
 - invalid value or formula error -> `Not scheduled yet`.
 
-For `Submitted for pick-up`, the client status is:
+For pickup scheduling, the client status is:
 
-- `Pickup scheduled` if pickup date or pickup time window exists;
+- `Pickup scheduled` if pickup date or pickup time window exists, even when CRM status is early or unknown;
 - `Pickup requested` if neither exists.
 
 ## Timeline

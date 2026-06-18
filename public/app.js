@@ -58,7 +58,7 @@ form.addEventListener('submit', async (event) => {
       throw new Error('Request failed');
     }
 
-    const data = await response.json();
+    const data = normalizeTrackingData(await response.json());
     renderResponse(data);
   } catch (error) {
     showMessage('We could not load your order right now. Please try again later.', true);
@@ -111,6 +111,45 @@ function renderTimeline(items) {
     row.append(marker, label);
     timeline.append(row);
   });
+}
+
+function normalizeTrackingData(data) {
+  const hasPickupSchedule = hasScheduledValue(data && data.pickup_date)
+    || hasScheduledValue(data && data.pickup_window);
+
+  if (!data || data.verified !== true || !hasPickupSchedule) {
+    return data;
+  }
+
+  const timelineItems = Array.isArray(data.timeline) ? data.timeline : [];
+  const pickupScheduledIndex = getTimelineIndex(timelineItems, 'pickup_scheduled');
+  const currentIndex = timelineItems.findIndex((item) => item.state === 'current');
+
+  if (pickupScheduledIndex === -1 || currentIndex >= pickupScheduledIndex) {
+    return data;
+  }
+
+  return {
+    ...data,
+    client_status: 'Pickup scheduled',
+    status_description: 'Pickup has been scheduled.',
+    timeline: timelineItems.map((item, index) => ({
+      ...item,
+      state: index < pickupScheduledIndex
+        ? 'done'
+        : index === pickupScheduledIndex
+          ? 'current'
+          : 'pending',
+    })),
+  };
+}
+
+function getTimelineIndex(items, code) {
+  return items.findIndex((item) => item.code === code);
+}
+
+function hasScheduledValue(value) {
+  return Boolean(value && value !== 'Not scheduled yet');
 }
 
 function getMarker(state) {

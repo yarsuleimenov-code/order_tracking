@@ -131,22 +131,6 @@ function mapClientStatus(row, pickupRow) {
   const hasPickupSchedule = isScheduledDate(pickupRow.pickup_due_date)
     || formatTimeWindow(pickupRow.earliest_time, pickupRow.latest_time) !== NOT_SCHEDULED;
 
-  if (key === 'new lead' || key === 'order has been received') {
-    return status('Order received', 'Order has been received.', 'order_received');
-  }
-
-  if (key === 'seller business hours collected') {
-    return status('Pickup scheduling in progress', 'Pickup scheduling is in progress.', 'pickup_scheduling');
-  }
-
-  if (key === 'submitted for pick-up') {
-    if (hasPickupSchedule) {
-      return status('Pickup scheduled', 'Pickup has been scheduled.', 'pickup_scheduled');
-    }
-
-    return status('Pickup requested', 'Pickup has been requested.', 'pickup_scheduling');
-  }
-
   if (key === 'pick-up finished. photo & bol uploaded') {
     return status('Picked up', 'Pickup has been completed.', 'picked_up');
   }
@@ -173,6 +157,26 @@ function mapClientStatus(row, pickupRow) {
 
   if (key === '143') {
     return status(UNKNOWN_STATUS, 'Final order status is being verified.', 'order_received');
+  }
+
+  if (key === 'submitted for pick-up') {
+    if (hasPickupSchedule) {
+      return status('Pickup scheduled', 'Pickup has been scheduled.', 'pickup_scheduled');
+    }
+
+    return status('Pickup requested', 'Pickup has been requested.', 'pickup_scheduling');
+  }
+
+  if (hasPickupSchedule) {
+    return status('Pickup scheduled', 'Pickup has been scheduled.', 'pickup_scheduled');
+  }
+
+  if (key === 'new lead' || key === 'order has been received') {
+    return status('Order received', 'Order has been received.', 'order_received');
+  }
+
+  if (key === 'seller business hours collected') {
+    return status('Pickup scheduling in progress', 'Pickup scheduling is in progress.', 'pickup_scheduling');
   }
 
   return status(UNKNOWN_STATUS, 'Order status is being updated.', 'order_received');
