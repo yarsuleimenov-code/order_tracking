@@ -9,6 +9,7 @@ const TIMELINE_STEPS = [
   { code: 'picked_up', label: 'Picked up' },
   { code: 'in_transit', label: 'In transit' },
   { code: 'delivery_scheduling', label: 'Delivery scheduling' },
+  { code: 'delivery_scheduled', label: 'Delivery scheduled' },
   { code: 'delivered', label: 'Delivered' },
 ];
 
@@ -143,7 +144,11 @@ function mapClientStatus(row, pickupRow) {
     return status('Delivered', 'Order has been delivered.', 'delivered');
   }
 
-  if (key === 'submitted for delivery' || key === 'buyer business hours collected' || key === 'buyer hours collected') {
+  if (key === 'submitted for delivery') {
+    return status('Delivery scheduled', 'Delivery has been scheduled.', 'delivery_scheduled');
+  }
+
+  if (key === 'buyer business hours collected' || key === 'buyer hours collected') {
     return status('Delivery scheduling in progress', 'Delivery scheduling is in progress.', 'delivery_scheduling');
   }
 

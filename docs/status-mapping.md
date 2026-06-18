@@ -13,7 +13,7 @@
 | `6. Sent interstate` / `Sent interstate` | `In transit` | In transit |
 | `7. Received interstate` / `Received interstate` | `In transit` | In transit |
 | `8. Buyer business hours collected` / `Buyer business hours collected` | `Delivery scheduling in progress` | Delivery scheduling |
-| `9. Submitted for delivery` / `Submitted for delivery` | `Delivery scheduling in progress` | Delivery scheduling |
+| `9. Submitted for delivery` / `Submitted for delivery` | `Delivery scheduled` | Delivery scheduled |
 | `10. Delivery finished. Photo & bol uploaded` / `Delivery finished` | `Delivered` | Delivered |
 | `Order canceled` | `Order canceled` | Order received |
 | `Payment confirmed. Order finished` | `Order finished` | Delivered |
@@ -62,6 +62,7 @@ Pickup scheduled
 Picked up
 In transit
 Delivery scheduling
+Delivery scheduled
 Delivered
 ```
 

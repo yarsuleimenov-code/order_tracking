@@ -20,6 +20,8 @@ Validate the MVP client order tracking flow using Apps Script backend and static
 | 10 | Formula error in date/time | `#ERROR!`, `#N/A`, or invalid value | UI displays `Not scheduled yet`; no raw formula error is shown. |
 | 11 | Number-prefixed pickup status | `4. Submitted for pick-up` with pickup date or pickup window | UI displays `Pickup scheduled`; timeline current step is `Pickup scheduled`. |
 | 12 | Number-prefixed transit status | `6. Sent interstate` or `7. Received interstate` | UI displays `In transit`; timeline current step is `In transit`. |
+| 13 | Buyer hours collected status | `8. Buyer business hours collected` | UI displays `Delivery scheduling in progress`; timeline current step is `Delivery scheduling`. |
+| 14 | Submitted for delivery status | `9. Submitted for delivery` | UI displays `Delivery scheduled`; timeline current step is `Delivery scheduled`. |
 
 ## Frontend Checks
 
