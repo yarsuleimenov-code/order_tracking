@@ -127,25 +127,9 @@ function loadTrackingRows() {
 
 function mapClientStatus(row, pickupRow) {
   const rawStatus = normalizeText(row.crm_status);
-  const key = rawStatus.toLowerCase();
+  const key = normalizeCrmStatus(rawStatus);
   const hasPickupSchedule = isScheduledDate(pickupRow.pickup_due_date)
     || formatTimeWindow(pickupRow.earliest_time, pickupRow.latest_time) !== NOT_SCHEDULED;
-
-  if (key === 'pick-up finished. photo & bol uploaded') {
-    return status('Picked up', 'Pickup has been completed.', 'picked_up');
-  }
-
-  if (key === 'sent interstate') {
-    return status('In transit', 'Order is in transit.', 'in_transit');
-  }
-
-  if (key === 'submitted for delivery' || key === 'buyer hours collected') {
-    return status('Delivery scheduling in progress', 'Delivery scheduling is in progress.', 'delivery_scheduling');
-  }
-
-  if (key === 'delivery finished') {
-    return status('Delivered', 'Order has been delivered.', 'delivered');
-  }
 
   if (key === 'order canceled') {
     return status('Order canceled', 'Order has been canceled.', 'order_received');
@@ -153,6 +137,22 @@ function mapClientStatus(row, pickupRow) {
 
   if (key === 'payment confirmed. order finished' || key === '142') {
     return status('Order finished', 'Order has been completed.', 'delivered');
+  }
+
+  if (key === 'delivery finished' || key === 'delivery finished. photo & bol uploaded') {
+    return status('Delivered', 'Order has been delivered.', 'delivered');
+  }
+
+  if (key === 'submitted for delivery' || key === 'buyer business hours collected' || key === 'buyer hours collected') {
+    return status('Delivery scheduling in progress', 'Delivery scheduling is in progress.', 'delivery_scheduling');
+  }
+
+  if (key === 'sent interstate' || key === 'received interstate') {
+    return status('In transit', 'Order is in transit.', 'in_transit');
+  }
+
+  if (key === 'pick-up finished. photo & bol uploaded') {
+    return status('Picked up', 'Pickup has been completed.', 'picked_up');
   }
 
   if (key === '143') {
@@ -165,10 +165,6 @@ function mapClientStatus(row, pickupRow) {
     }
 
     return status('Pickup requested', 'Pickup has been requested.', 'pickup_scheduling');
-  }
-
-  if (hasPickupSchedule) {
-    return status('Pickup scheduled', 'Pickup has been scheduled.', 'pickup_scheduled');
   }
 
   if (key === 'new lead' || key === 'order has been received') {
@@ -237,6 +233,12 @@ function normalizeHeader(value) {
   return normalizeText(value).toLowerCase();
 }
 
+function normalizeCrmStatus(value) {
+  return normalizeText(value)
+    .replace(/^\d+\.\s*/, '')
+    .toLowerCase();
+}
+
 function normalizeText(value) {
   if (value === null || value === undefined) {
     return '';
@@ -291,7 +293,22 @@ function formatTimeValue(value) {
     return '';
   }
 
-  if (/^\d{1,2}:\d{2}(\s?[AP]M)?$/i.test(text)) {
+  const timeMatch = text.match(/^(\d{1,2}):(\d{2})(?::\d{2})?(\s?[AP]M)?$/i);
+
+  if (timeMatch) {
+    if (timeMatch[3]) {
+      return text.toUpperCase().replace(/\s?([AP]M)$/i, ' $1');
+    }
+
+    const hours = Number(timeMatch[1]);
+    const minutes = Number(timeMatch[2]);
+
+    if (hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59) {
+      return Utilities.formatDate(new Date(2000, 0, 1, hours, minutes), Session.getScriptTimeZone(), 'h:mm a');
+    }
+  }
+
+  if (/^\d{1,2}:\d{2}(\s?[AP]M)$/i.test(text)) {
     return text.toUpperCase().replace(/\s?([AP]M)$/i, ' $1');
   }
 
@@ -323,6 +340,12 @@ function toValidDate(value) {
 
   if (!text) {
     return null;
+  }
+
+  const dateMatch = text.match(/^(\d{4})-(\d{2})-(\d{2})(?:\s+\d{2}:\d{2}:\d{2})?$/);
+
+  if (dateMatch) {
+    return new Date(Number(dateMatch[1]), Number(dateMatch[2]) - 1, Number(dateMatch[3]));
   }
 
   const parsed = new Date(text);

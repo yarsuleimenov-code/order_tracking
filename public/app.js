@@ -116,8 +116,9 @@ function renderTimeline(items) {
 function normalizeTrackingData(data) {
   const hasPickupSchedule = hasScheduledValue(data && data.pickup_date)
     || hasScheduledValue(data && data.pickup_window);
+  const canApplyLegacyFallback = data && data.client_status === 'Order status is being updated';
 
-  if (!data || data.verified !== true || !hasPickupSchedule) {
+  if (!data || data.verified !== true || !hasPickupSchedule || !canApplyLegacyFallback) {
     return data;
   }
 

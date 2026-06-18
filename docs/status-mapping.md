@@ -4,17 +4,17 @@
 
 | CRM status | Client status | Timeline step |
 | --- | --- | --- |
-| `New lead` | `Order received` | Order received |
-| `Order has been received` | `Order received` | Order received |
-| `Seller business hours collected` | `Pickup scheduling in progress` | Pickup scheduling |
-| `Submitted for pick-up` with pickup date or time window | `Pickup scheduled` | Pickup scheduled |
-| `Submitted for pick-up` without pickup date or time window | `Pickup requested` | Pickup scheduling |
-| Early, empty, or unknown status with pickup date or time window | `Pickup scheduled` | Pickup scheduled |
-| `Pick-up finished. Photo & Bol uploaded` | `Picked up` | Picked up |
-| `Sent interstate` | `In transit` | In transit |
-| `Submitted for delivery` | `Delivery scheduling in progress` | Delivery scheduling |
-| `Buyer hours collected` | `Delivery scheduling in progress` | Delivery scheduling |
-| `Delivery finished` | `Delivered` | Delivered |
+| `1. New lead` / `New lead` | `Order received` | Order received |
+| `2. Order has been received` / `Order has been received` | `Order received` | Order received |
+| `3. Seller business hours collected` / `Seller business hours collected` | `Pickup scheduling in progress` | Pickup scheduling |
+| `4. Submitted for pick-up` / `Submitted for pick-up` with pickup date or time window | `Pickup scheduled` | Pickup scheduled |
+| `4. Submitted for pick-up` / `Submitted for pick-up` without pickup date or time window | `Pickup requested` | Pickup scheduling |
+| `5. Pick-up finished. Photo & Bol uploaded` / `Pick-up finished. Photo & Bol uploaded` | `Picked up` | Picked up |
+| `6. Sent interstate` / `Sent interstate` | `In transit` | In transit |
+| `7. Received interstate` / `Received interstate` | `In transit` | In transit |
+| `8. Buyer business hours collected` / `Buyer business hours collected` | `Delivery scheduling in progress` | Delivery scheduling |
+| `9. Submitted for delivery` / `Submitted for delivery` | `Delivery scheduling in progress` | Delivery scheduling |
+| `10. Delivery finished. Photo & bol uploaded` / `Delivery finished` | `Delivered` | Delivered |
 | `Order canceled` | `Order canceled` | Order received |
 | `Payment confirmed. Order finished` | `Order finished` | Delivered |
 | `142` | `Order finished` | Delivered |
@@ -30,11 +30,7 @@ Order status is being updated
 
 This avoids exposing raw CRM statuses and avoids showing a wrong final status.
 
-If a valid pickup date or pickup time window exists, the public status is promoted to:
-
-```text
-Pickup scheduled
-```
+Number prefixes like `4. ` are ignored before mapping.
 
 ## Scheduled / Not Scheduled
 
@@ -52,7 +48,7 @@ Time windows:
 
 For pickup scheduling, the client status is:
 
-- `Pickup scheduled` if pickup date or pickup time window exists, even when CRM status is early or unknown;
+- `Pickup scheduled` if CRM status is `Submitted for pick-up` and pickup date or pickup time window exists;
 - `Pickup requested` if neither exists.
 
 ## Timeline
