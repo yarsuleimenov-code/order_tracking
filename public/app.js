@@ -2,14 +2,13 @@ const TRACKING_API_URL = 'https://script.google.com/macros/s/AKfycbzpDDSHD1k69cC
 
 const form = document.querySelector('#tracking-form');
 const orderIdInput = document.querySelector('#order-id');
-const phoneLast4Input = document.querySelector('#phone-last4');
 const trackButton = document.querySelector('#track-button');
 const trackButtonLabel = document.querySelector('#track-button-label');
 const statusMessage = document.querySelector('#status-message');
 const searchPanel = document.querySelector('.search-panel');
 const verifiedSummary = document.querySelector('#verified-summary');
 const verifiedOrder = document.querySelector('#verified-order');
-const verifiedPhone = document.querySelector('#verified-phone');
+const verifiedLookup = document.querySelector('#verified-lookup');
 const trackAnotherButton = document.querySelector('#track-another-button');
 const result = document.querySelector('#result');
 
@@ -31,17 +30,11 @@ form.addEventListener('submit', async (event) => {
   event.preventDefault();
 
   const orderId = orderIdInput.value.trim();
-  const phoneLast4 = phoneLast4Input.value.trim();
 
   clearState();
 
   if (!orderId) {
     showMessage('Please enter your Order ID.', true);
-    return;
-  }
-
-  if (!/^\d{4}$/.test(phoneLast4)) {
-    showMessage('Please enter exactly 4 phone digits.', true);
     return;
   }
 
@@ -60,7 +53,6 @@ form.addEventListener('submit', async (event) => {
       },
       body: JSON.stringify({
         order_id: orderId,
-        phone_last4: phoneLast4,
       }),
     });
 
@@ -79,7 +71,6 @@ form.addEventListener('submit', async (event) => {
 
 trackAnotherButton.addEventListener('click', () => {
   orderIdInput.value = '';
-  phoneLast4Input.value = '';
   showSearchForm();
   clearState();
   orderIdInput.focus();
@@ -88,11 +79,6 @@ trackAnotherButton.addEventListener('click', () => {
 function renderResponse(data) {
   if (!data || data.found === false) {
     showMessage('Order was not found. Please check your Order ID.', true);
-    return;
-  }
-
-  if (data.verified === false) {
-    showMessage('The phone digits do not match this order.', true);
     return;
   }
 
@@ -125,9 +111,7 @@ function renderDeliveryDetails(data) {
 
 function renderVerifiedSummary(data) {
   verifiedOrder.textContent = `Tracking order #${data.order_id || ''}`;
-  verifiedPhone.textContent = data.phone_masked
-    ? `Verified with phone ${data.phone_masked}`
-    : 'Verified with phone';
+  verifiedLookup.textContent = 'Lookup confirmed by Order ID';
   contactSupportLink.href = `mailto:support@example.com?subject=${encodeURIComponent(`Order tracking support #${data.order_id || ''}`)}`;
   searchPanel.classList.add('is-verified');
   verifiedSummary.classList.remove('hidden');
@@ -164,7 +148,7 @@ function normalizeTrackingData(data) {
     || hasScheduledValue(data && data.pickup_window);
   const canApplyLegacyFallback = data && data.client_status === 'Order status is being updated';
 
-  if (!data || data.verified !== true || !hasPickupSchedule || !canApplyLegacyFallback) {
+  if (!data || data.found !== true || !hasPickupSchedule || !canApplyLegacyFallback) {
     return data;
   }
 

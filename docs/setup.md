@@ -65,13 +65,11 @@ Open `public/index.html` in a browser and test:
 
 ```text
 Order ID: 22913624
-Last 4 digits: 2464
 ```
 
 Expected result:
 
 - order is found;
-- phone digits are verified;
 - public status is displayed;
 - no full phone, raw CRM status, spreadsheet URL, or internal fields are shown.
 

@@ -26,20 +26,6 @@
             >
           </div>
 
-          <div class="field-group">
-            <label for="phone-last4">Last 4 digits of phone number</label>
-            <input
-              id="phone-last4"
-              name="phone_last4"
-              type="text"
-              inputmode="numeric"
-              maxlength="4"
-              pattern="[0-9]{4}"
-              autocomplete="off"
-              required
-            >
-          </div>
-
           <button id="track-button" type="submit">
             <span id="track-button-label">Track order</span>
             <span class="button-spinner" aria-hidden="true"></span>
@@ -49,7 +35,7 @@
         <div id="verified-summary" class="verified-summary hidden">
           <div>
             <p id="verified-order" class="verified-title"></p>
-            <p id="verified-phone" class="description"></p>
+            <p id="verified-lookup" class="description"></p>
           </div>
           <button id="track-another-button" class="secondary-button" type="button">Track another order</button>
         </div>

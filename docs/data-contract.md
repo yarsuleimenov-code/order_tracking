@@ -17,7 +17,7 @@ public_order_tracking
 | `address_line_1` | No | Not returned in MVP UI. |
 | `earliest_time` | No | Start of pickup or delivery time window. |
 | `latest_time` | No | End of pickup or delivery time window. |
-| `phone_masked` | Yes | Masked phone, used only to verify last 4 digits. |
+| `phone_masked` | No | Source field retained in sheet, not used or returned in Order ID-only MVP. |
 | `recipient_name` | No | Not returned in MVP response. |
 | `type` | No | `pickup` or `delivery`; used to select date/window rows. |
 | `scheduled_date` / `PU date` / `pickup_due_date` | No | Appointment or pickup date for the matching pickup row. |
@@ -29,9 +29,8 @@ public_order_tracking
 | Field | Rule |
 | --- | --- |
 | `found` | Whether Order ID exists. |
-| `verified` | Whether phone last 4 digits match. |
+| `verified` | `true` when Order ID exists. Kept for backward response compatibility. |
 | `order_id` | Echoed public Order ID. |
-| `phone_masked` | Masked phone only, never full phone. |
 | `client_status` | Mapped public status. |
 | `status_description` | Short public explanation. |
 | `pickup_date` | `scheduled_date`, `PU date`, or `pickup_due_date` from pickup row, or `Not scheduled yet`. |
@@ -61,11 +60,14 @@ public_order_tracking
 
 If multiple rows match one `order_id`:
 
-1. Verify all rows against `phone_masked`.
-2. Use all verified rows.
-3. Choose latest current status by maximum `last_change_date`.
-4. Use the latest verified `pickup` row for pickup date/window when available.
-5. Use the latest verified `delivery` row only for delivery appointment date/window.
-6. If no delivery appointment exists, use `delivery_due_date` as estimated delivery and return delivery window as `Not scheduled yet`.
+1. Use all rows matching `order_id`.
+2. Choose latest current status by maximum `last_change_date`.
+3. Use the latest matching `pickup` row for pickup date/window when available.
+4. Use the latest matching `delivery` row only for delivery appointment date/window.
+5. If no delivery appointment exists, use `delivery_due_date` as estimated delivery and return delivery window as `Not scheduled yet`.
 
 Public date/time fields must be based on Google Sheets display values. Invalid dates, formula errors, and empty windows must return `Not scheduled yet`.
+
+## Access Model
+
+This MVP uses Order ID as the only lookup key. It is simpler for customers, but it is not strong authentication. Do not expose private fields in the response.

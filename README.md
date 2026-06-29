@@ -1,6 +1,6 @@
 # Order Tracking MVP
 
-Minimal client-facing order tracking portal by Order ID and last 4 phone digits.
+Minimal client-facing order tracking portal by Order ID.
 
 ## Scope
 
@@ -12,10 +12,9 @@ Minimal client-facing order tracking portal by Order ID and last 4 phone digits.
 ## MVP Flow
 
 1. Client enters Order ID.
-2. Client enters last 4 digits of phone number.
-3. Frontend sends a POST request to the Apps Script Web App endpoint.
-4. Apps Script reads `public_order_tracking`, verifies phone digits, maps CRM status to client status, and returns a public response.
-5. Frontend displays current status, pickup/delivery dates, time windows, last update, and progress timeline.
+2. Frontend sends a POST request to the Apps Script Web App endpoint.
+3. Apps Script reads `public_order_tracking`, maps CRM status to client status, and returns a public response.
+4. Frontend displays current status, pickup/delivery dates, time windows, last update, and progress timeline.
 
 ## Structure
 
@@ -53,7 +52,6 @@ Detailed setup: [docs/setup.md](docs/setup.md).
 
 ```text
 order_id: 22913624
-phone_last4: 2464
 ```
 
 Test cases: [tests/test-cases.md](tests/test-cases.md).

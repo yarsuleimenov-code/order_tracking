@@ -8,9 +8,9 @@ Validate the MVP client order tracking flow using Apps Script backend and static
 
 | # | Case | Input | Expected Result |
 | --- | --- | --- | --- |
-| 1 | Existing Order ID + correct last 4 digits | `22913624`, `2464` | Order is shown with public status, dates/windows, last update, and timeline. |
-| 2 | Existing Order ID + wrong last 4 digits | Existing order, wrong digits | Access is denied with `The phone digits do not match this order.` |
-| 3 | Nonexistent Order ID | Unknown order, any 4 digits | `Order was not found. Please check your Order ID.` |
+| 1 | Existing Order ID | `22913624` | Order is shown with public status, dates/windows, last update, and timeline. |
+| 2 | Empty Order ID | Empty input | User is asked to enter Order ID. |
+| 3 | Nonexistent Order ID | Unknown order | `Order was not found. Please check your Order ID.` |
 | 4 | Order ID with multiple rows | Order with pickup and delivery rows | Latest status uses max `last_change_date`; pickup/delivery details come from matching `type` rows. |
 | 5 | Empty pickup date | Existing order with empty `pickup_due_date` | Pickup date displays `Not scheduled yet`. |
 | 6 | Empty delivery date | Existing order with empty `delivery_due_date` | Delivery date displays `Not scheduled yet`. |
@@ -32,7 +32,6 @@ Validate the MVP client order tracking flow using Apps Script backend and static
 - Loading state appears after submitting.
 - Found state shows only public fields.
 - Not found state uses a clear message.
-- Wrong phone state does not reveal order details.
 - Technical error state uses a generic message.
 
 ## Privacy Checks

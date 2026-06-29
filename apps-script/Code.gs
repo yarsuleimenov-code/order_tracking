@@ -37,9 +37,8 @@ function doPost(e) {
 
 function trackOrder(payload) {
   const orderId = normalizeText(payload.order_id);
-  const phoneLast4 = normalizeText(payload.phone_last4).replace(/\D/g, '');
 
-  if (!orderId || !/^\d{4}$/.test(phoneLast4)) {
+  if (!orderId) {
     return {
       found: false,
       verified: false,
@@ -58,19 +57,9 @@ function trackOrder(payload) {
     };
   }
 
-  const verifiedRows = matchingRows.filter((row) => getLast4Digits(row.phone_masked) === phoneLast4);
-
-  if (verifiedRows.length === 0) {
-    return {
-      found: true,
-      verified: false,
-      message: 'The phone digits do not match this order.',
-    };
-  }
-
-  const latestRow = getLatestRow(verifiedRows);
-  const pickupRow = getLatestTypedRow(verifiedRows, 'pickup') || latestRow;
-  const deliveryRow = getLatestTypedRow(verifiedRows, 'delivery');
+  const latestRow = getLatestRow(matchingRows);
+  const pickupRow = getLatestTypedRow(matchingRows, 'pickup') || latestRow;
+  const deliveryRow = getLatestTypedRow(matchingRows, 'delivery');
   const deliveryDateRow = deliveryRow || latestRow;
   const clientStatus = mapClientStatus(latestRow, pickupRow);
   const deliveryAppointmentDate = deliveryRow ? getPublicDate(deliveryRow, ['scheduled_date', 'delivery_date']) : NOT_SCHEDULED;
@@ -80,7 +69,6 @@ function trackOrder(payload) {
     found: true,
     verified: true,
     order_id: orderId,
-    phone_masked: normalizeText(latestRow.phone_masked),
     client_status: clientStatus.label,
     status_description: clientStatus.description,
     pickup_date: getPublicDate(pickupRow, ['scheduled_date', 'pu_date', 'pickup_date', 'pickup_due_date', 'pickup_due']),
@@ -265,11 +253,6 @@ function normalizeText(value) {
   }
 
   return String(value).trim();
-}
-
-function getLast4Digits(value) {
-  const digits = normalizeText(value).replace(/\D/g, '');
-  return digits.length >= 4 ? digits.slice(-4) : '';
 }
 
 function getPublicDate(row, fields) {
